@@ -1,7 +1,7 @@
 -- 1. Fleet Vehicle Reliability Rankings Report
 SELECT 
     v.vehicle_id, 
-    v.registration_num,
+    v.registration_number,
     v.make, 
     v.model, 
     COALESCE(r.reliability_score, 100.00) AS reliability_score
