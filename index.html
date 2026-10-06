@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vehicle Rental & Registration System</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #1e293b;
+            --border: #e2e8f0;
+            --danger: #ef4444;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .login-box {
+            max-width: 400px;
+            margin: 80px auto;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .login-box h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: var(--primary);
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 15px;
+        }
+
+        .user-badge {
+            background: #e0e7ff;
+            color: #3730a3;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: bold;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            padding: 10px 18px;
+            border: none;
+            background: #e2e8f0;
+            color: var(--text);
+            cursor: pointer;
+            border-radius: 6px;
+            font-weight: 600;
+        }
+
+        .tab-btn.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .section {
+            display: none;
+            background: var(--card-bg);
+            padding: 24px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .card {
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 16px;
+            background: #fff;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        input, button {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+        }
+
+        .btn {
+            background: var(--primary);
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+        }
+
+        .btn:hover {
+            background: var(--primary-hover);
+        }
+
+        .btn-logout {
+            background: var(--danger);
+            width: auto;
+            padding: 6px 14px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        th, td {
+            border: 1px solid var(--border);
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f1f5f9;
+        }
+
+        .badge-severity {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.85em;
+            font-weight: bold;
+        }
+        .severity-minor { background: #fef08a; color: #854d0e; }
+        .severity-major { background: #fca5a5; color: #991b1b; }
+    </style>
+</head>
+<body>
+
+<!-- LOGIN VIEW -->
+<div id="loginView" class="login-box">
+    <h2>System Login</h2>
+    <form onsubmit="handleLogin(event)">
+        <div class="form-group">
+            <label for="loginEmail">Email Address</label>
+            <input type="email" id="loginEmail" placeholder="admin@system.com or john@example.com" required>
+        </div>
+        <div class="form-group">
+            <label for="loginPassword">Password</label>
+            <input type="password" id="loginPassword" placeholder="Enter password" required>
+        </div>
+        <button type="submit" class="btn">Sign In</button>
+    </form>
+    <div id="loginError" style="color: var(--danger); margin-top: 15px; text-align: center;"></div>
+</div>
+
+<!-- MAIN DASHBOARD -->
+<div id="dashboardView" class="container" style="display: none;">
+    <header>
+        <div>
+            <h1 id="welcomeTitle">Welcome</h1>
+            <span id="roleBadge" class="user-badge"></span>
+        </div>
+        <button class="btn btn-logout" onclick="handleLogout()">Logout</button>
+    </header>
+
+    <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab(event, 'vehicles')">Available Vehicles</button>
+    <button class="tab-btn" onclick="switchTab(event, 'booking')">New Booking</button>
+    <button class="tab-btn" onclick="switchTab(event, 'damage')">Inspection & Damage Logs</button>
+    <button class="tab-btn" onclick="switchTab(event, 'reliability')">Reliability Scores</button>
+</div>
+
+    <!-- MODULE 3: FLEET LIST VIEW -->
+<!-- Inside <div id="vehicles" class="section active"> -->
+<div id="vehicles" class="section active">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+        <h2>Available Fleet by Type</h2>
+        <span id="vehicleCountBadge" style="background: #2563eb; color: white; padding: 6px 14px; border-radius: 20px; font-weight: bold;">
+            Total Vehicles: 0
+        </span>
+    </div>
+
+    <!-- Summary Table for Quantities -->
+    <div id="quantityTableContainer" style="margin-bottom: 25px;"></div>
+
+    <h3>All Individual Vehicles</h3>
+    <div id="vehicleGrid" class="grid"></div>
+</div>
+
+    <!-- MODULE 4: NEW BOOKING -->
+    <div id="booking" class="section">
+        <h2>Create Reservation</h2>
+        <form id="bookingForm" onsubmit="createBooking(event)">
+            <div class="form-group">
+                <label for="customerId">Customer ID</label>
+                <input type="number" id="customerId" required placeholder="Enter Customer ID">
+            </div>
+            <div class="form-group">
+                <label for="vehicleId">Vehicle ID</label>
+                <input type="number" id="vehicleId" required placeholder="Enter Vehicle ID">
+            </div>
+            <div class="form-group">
+                <label for="startDate">Start Date</label>
+                <input type="date" id="startDate" required>
+            </div>
+            <div class="form-group">
+                <label for="endDate">End Date</label>
+                <input type="date" id="endDate" required>
+            </div>
+            <div class="form-group">
+                <label for="totalCost">Total Cost ($)</label>
+                <input type="number" id="totalCost" step="0.01" required placeholder="250.00">
+            </div>
+            <button type="submit" class="btn">Confirm Reservation</button>
+        </form>
+        <div id="bookingMessage" style="margin-top: 15px;"></div>
+    </div>
+
+    <!-- MODULE 7: DAMAGE & INSPECTION RECORDS -->
+    <div id="damage" class="section">
+        <h2>Vehicle Inspection & Damage History</h2>
+        <div id="damageTableContainer">Loading inspection records...</div>
+    </div>
+
+    <!-- MODULE 9: RELIABILITY SCORES -->
+    <div id="reliability" class="section">
+        <h2>Vehicle Reliability Score Calculator</h2>
+        <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+            <input type="number" id="checkVehicleId" placeholder="Enter Vehicle ID (e.g. 1)">
+            <button class="btn" style="width: auto;" onclick="checkReliability()">Check Score</button>
+        </div>
+        <div id="reliabilityResult"></div>
+    </div>
+</div>
+
+<script>
+    const API_BASE = 'http://localhost:5000/api';
+    let currentUser = null;
+
+    async function handleLogin(e) {
+        e.preventDefault();
+        const email = document.getElementById('loginEmail').value;
+        const password = document.getElementById('loginPassword').value;
+        const errorDiv = document.getElementById('loginError');
+
+        try {
+            const res = await fetch(`${API_BASE}/auth/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+                currentUser = data.user;
+                setupUserDashboard();
+            } else {
+                errorDiv.innerText = data.message || 'Login failed';
+            }
+        } catch (err) {
+            errorDiv.innerText = 'Server error: Ensure app.js is running.';
+        }
+    }
+
+    function setupUserDashboard() {
+        document.getElementById('loginView').style.display = 'none';
+        document.getElementById('dashboardView').style.display = 'block';
+
+        document.getElementById('welcomeTitle').innerText = `Hello, ${currentUser.username}`;
+        document.getElementById('roleBadge').innerText = `Role: ${currentUser.role}`;
+
+        fetchVehicles();
+        fetchDamageReports();
+    }
+
+    function handleLogout() {
+        currentUser = null;
+        document.getElementById('dashboardView').style.display = 'none';
+        document.getElementById('loginView').style.display = 'block';
+    }
+
+   function switchTab(event, tabId) {
+        // 1. Hide all section divs
+        document.querySelectorAll('.section').forEach(section => {
+            section.classList.remove('active');
+            section.style.display = 'none';
+        });
+
+        // 2. Deactivate all buttons
+        document.querySelectorAll('button').forEach(btn => {
+            btn.classList.remove('active');
+        });
+
+        // 3. Show target section
+        const activeSection = document.getElementById(tabId);
+        if (activeSection) {
+            activeSection.classList.add('active');
+            activeSection.style.display = 'block';
+        }
+
+        // 4. Highlight clicked button
+        if (event && event.currentTarget) {
+            event.currentTarget.classList.add('active');
+        }
+
+        // 5. Trigger API Call
+        if (tabId === 'vehicles') fetchVehicles();
+        if (tabId === 'damage') fetchDamageReports();
+    }
+
+    async function fetchVehicles() {
+        const grid = document.getElementById('vehicleGrid');
+        if (!grid) return;
+        
+        try {
+            const res = await fetch(`${API_BASE}/vehicles`);
+            const data = await res.json();
+
+            if (!Array.isArray(data) || data.length === 0) {
+                grid.innerHTML = '<p>No available vehicles.</p>';
+                return;
+            }
+
+            grid.innerHTML = data.map(v => `
+                <div class="card">
+                    <h3>${v.make || ''} ${v.model || ''} (${v.year || v.manufacture_year || 'N/A'})</h3>
+                    <p><strong>Vehicle ID:</strong> ${v.vehicle_id}</p>
+                    <p><strong>License Plate:</strong> ${v.license_plate || v.registration_number || 'N/A'}</p>
+                    <p><strong>Daily Rate:</strong> $${v.daily_rate || v.rental_rate_per_day || 'N/A'}</p>
+                    <p><strong>Available Quantity:</strong> ${v.available_quantity || 1}</p>
+                    <p><strong>Status:</strong> <span style="color: green; font-weight: bold;">${v.status || 'Available'}</span></p>
+                </div>
+            `).join('');
+        } catch (err) {
+            grid.innerHTML = `<p style="color:red;">Error: ${err.message}</p>`;
+        }
+    }
+
+   async function fetchDamageReports() {
+    const container = document.getElementById('damageReportsContainer');
+    if (!container) {
+        console.error("Error: Element with ID 'damageReportsContainer' not found in HTML.");
+        return;
+    }
+
+    try {
+        const res = await fetch('http://localhost:5000/api/damage-reports');
+        const data = await res.json();
+
+        console.log("Fetched Damage Reports Data:", data);
+
+        if (data.error) {
+            container.innerHTML = `<p style="color:red; font-weight:bold;">Database Error: ${data.error}</p>`;
+            return;
+        }
+
+        if (!Array.isArray(data) || data.length === 0) {
+            container.innerHTML = '<p>No inspection or damage records reported.</p>';
+            return;
+        }
+
+        let tableHTML = `
+            <table class="data-table" style="width: 100%; border-collapse: collapse; margin-top: 15px; background: white;">
+                <thead>
+                    <tr style="background: #f1f5f9; text-align: left;">
+                        <th style="padding: 10px; border: 1px solid #cbd5e1;">Report ID</th>
+                        <th style="padding: 10px; border: 1px solid #cbd5e1;">Vehicle ID</th>
+                        <th style="padding: 10px; border: 1px solid #cbd5e1;">Description</th>
+                        <th style="padding: 10px; border: 1px solid #cbd5e1;">Severity</th>
+                        <th style="padding: 10px; border: 1px solid #cbd5e1;">Repair Cost</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+
+        data.forEach(item => {
+            // Read keys dynamically regardless of exact column names
+            const id = item.report_id || item.damage_id || item.id || 'N/A';
+            const vehicle = item.make && item.model ? `${item.make} ${item.model}` : `Vehicle #${item.vehicle_id || 'N/A'}`;
+            const desc = item.description || item.damage_description || item.notes || item.details || 'N/A';
+            const severity = item.severity || 'N/A';
+            const cost = item.repair_cost || item.cost || '0.00';
+
+            tableHTML += `
+                <tr>
+                    <td style="padding: 10px; border: 1px solid #cbd5e1;">#${id}</td>
+                    <td style="padding: 10px; border: 1px solid #cbd5e1;">${vehicle}</td>
+                    <td style="padding: 10px; border: 1px solid #cbd5e1;">${desc}</td>
+                    <td style="padding: 10px; border: 1px solid #cbd5e1;">
+                        <span style="padding: 3px 8px; border-radius: 4px; background: #fee2e2; color: #991b1b; font-weight: bold;">
+                            ${severity}
+                        </span>
+                    </td>
+                    <td style="padding: 10px; border: 1px solid #cbd5e1;">$${cost}</td>
+                </tr>
+            `;
+        });
+
+        tableHTML += `</tbody></table>`;
+        container.innerHTML = tableHTML;
+
+    } catch (err) {
+        console.error("Fetch Exception:", err);
+        container.innerHTML = `<p style="color:red; font-weight:bold;">Frontend Fetch Error: ${err.message}</p>`;
+    }
+}
+
+    // Run fetch Damage Reports on script load if damage section is visible
+    document.addEventListener('DOMContentLoaded', () => {
+        fetchVehicles();
+        fetchDamageReports();
+    });
+
+    async function createBooking(e) {
+        e.preventDefault();
+        const messageDiv = document.getElementById('bookingMessage');
+        const bookingData = {
+            customer_id: document.getElementById('customerId').value,
+            vehicle_id: document.getElementById('vehicleId').value,
+            start_date: document.getElementById('startDate').value,
+            end_date: document.getElementById('endDate').value,
+            total_cost: document.getElementById('totalCost').value
+        };
+
+        try {
+            const res = await fetch(`${API_BASE}/bookings`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(bookingData)
+            });
+            const data = await res.json();
+            if (res.ok) {
+                messageDiv.innerHTML = `<p style="color:green; font-weight:bold;">${data.message}! ID: ${data.booking_id}</p>`;
+                document.getElementById('bookingForm').reset();
+            } else {
+                messageDiv.innerHTML = `<p style="color:red;">Error: ${data.error || data.message}</p>`;
+            }
+        } catch (err) {
+            messageDiv.innerHTML = `<p style="color:red;">Failed to connect: ${err.message}</p>`;
+        }
+    }
+
+    async function checkReliability() {
+        const vehicleId = document.getElementById('checkVehicleId').value;
+        const resultDiv = document.getElementById('reliabilityResult');
+        if (!vehicleId) return alert('Enter a Vehicle ID');
+
+        resultDiv.innerHTML = '<p>Executing Stored Procedure...</p>';
+        try {
+            const res = await fetch(`${API_BASE}/vehicles/${vehicleId}/reliability`);
+            const data = await res.json();
+            
+            if (data.reliability_score !== undefined) {
+                resultDiv.innerHTML = `
+                    <table>
+                        <tr><th>Vehicle ID</th><td>${data.vehicle_id}</td></tr>
+                        <tr><th>Score</th><td><strong>${data.reliability_score} / 100</strong></td></tr>
+                        <tr><th>Calculated On</th><td>${new Date(data.last_calculated).toLocaleString()}</td></tr>
+                    </table>
+                `;
+            } else {
+                resultDiv.innerHTML = '<p>No reliability record found for this vehicle.</p>';
+            }
+        } catch (err) {
+            resultDiv.innerHTML = `<p style="color:red;">Error: ${err.message}</p>`;
+        }
+    }
+</script>
+
+</body>
+</html>
